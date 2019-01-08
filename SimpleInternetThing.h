@@ -55,11 +55,13 @@ private:
   void turnIndicatorLedOn();
   void turnIndicatorLedOff();
 
+  void subscribe(String topic, int qos);
   void publish(String topic, String message, bool retain);
 
   std::function<void(String, JsonObject &)> _commandCallback;
   void onReceive(char *topic, unsigned long length);
-  void handleMqttOtaUpdate(unsigned long length);
+  void handleOtaUpdate(unsigned long length);
+  String createOtaUpdateProgressMessage(String message);
 
   unsigned long _lastSystemMessageAt;
   String createSystemMessage();

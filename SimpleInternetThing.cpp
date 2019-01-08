@@ -68,15 +68,15 @@ String SimpleInternetThing::createTopic(const char *subject)
 
 void SimpleInternetThing::onReceive(char *topic, unsigned long length)
 {
-  Serial.print("Message arrived [");
+  Serial.print("Received on: ");
   Serial.print(topic);
-  Serial.print("], length=");
+  Serial.print(", ");
   Serial.print(length);
-  Serial.println(".");
+  Serial.println(" bytes.");
 
   if (String(topic) == createTopic("update"))
   {
-    handleMqttOtaUpdate(length);
+    handleOtaUpdate(length);
   }
 
   DynamicJsonBuffer jsonBuffer(1024);
@@ -110,12 +110,14 @@ void SimpleInternetThing::onReceive(char *topic, unsigned long length)
   }
 }
 
-void SimpleInternetThing::handleMqttOtaUpdate(unsigned long length)
+void SimpleInternetThing::handleOtaUpdate(unsigned long length)
 {
   String progressTopic = createTopic("update/progress");
+  publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Updating. New firmware size is " + String(length) + " bytes."), false);
 
   if (Update.begin(length))
   {
+    unsigned long tenPercent = length / 10;
     byte buffer[1];
     unsigned long actual;
     for (actual = 0; actual < length; actual++)
@@ -128,38 +130,47 @@ void SimpleInternetThing::handleMqttOtaUpdate(unsigned long length)
       buffer[0] = b;
       Update.write(buffer, 1);
 
-      if (actual % 10000 == 0)
+      if ((actual > 0) && (actual % tenPercent == 0))
       {
-        publish(progressTopic.c_str(), String(actual).c_str(), false);
+        publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Read " + String(actual) + " bytes."), false);
       }
     }
-
-    publish(progressTopic.c_str(), String(actual).c_str(), false);
 
     if (Update.end())
     {
       if (Update.isFinished())
       {
-        publish(progressTopic.c_str(), "Update successful.", false);
+        publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Update successful."), false);
       }
       else
       {
-        publish(progressTopic.c_str(), "Update not finished.", false);
+        publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Update not finished."), false);
       }
     }
     else
     {
-      publish(progressTopic.c_str(), "Error Occurred. Error #: " + String(Update.getError()) + ".", false);
+      publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Error occurred, #: " + String(Update.getError()) + "."), false);
     }
   }
   else
   {
-    publish(progressTopic.c_str(), "Not enough space to begin OTA.", false);
+    publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Not enough space to update."), false);
   }
 
-  publish(progressTopic.c_str(), "Restarting.", false);
+  publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Restarting."), false);
   delay(1000);
   ESP.restart();
+}
+
+String SimpleInternetThing::createOtaUpdateProgressMessage(String message)
+{
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject &jsonObject = jsonBuffer.createObject();
+  jsonObject["message"] = message;
+  String jsonString;
+  jsonObject.printTo(jsonString);
+
+  return jsonString;
 }
 
 void SimpleInternetThing::stayConnected()
@@ -193,9 +204,7 @@ void SimpleInternetThing::stayConnected()
     }
 
     Serial.println();
-    Serial.print("Connected, ip ");
-    Serial.print(WiFi.localIP());
-    Serial.println(".");
+    Serial.println("Connected.");
 }
 
   if (millis() - _lastReconnectAttemptAt >= SIMPLE_INTERNET_THING_RECONNECT_DELAY)
@@ -219,8 +228,8 @@ void SimpleInternetThing::stayConnected()
       Serial.println("Connected.");
 
       publish(createTopic("status"), createStatusMessage(true), true);
-      _mqttClient.subscribe(createTopic("command").c_str(), 1);
-      _mqttClient.subscribe(createTopic("update").c_str(), 0);
+      subscribe(createTopic("command"), 1);
+      subscribe(createTopic("update"), 0);
     }
     else
     {
@@ -231,12 +240,20 @@ void SimpleInternetThing::stayConnected()
   }
 }
 
+void SimpleInternetThing::subscribe(String topic, int qos) {
+  Serial.print("Subscribed to: ");
+  Serial.print(topic);
+  Serial.println(".");
+  _mqttClient.subscribe(topic.c_str(), qos);
+}
+
 void SimpleInternetThing::publish(String topic, String message, bool retained)
 {
+  Serial.print("Published to: ");
   Serial.print(topic);
-  Serial.print(": '");
+  Serial.print(", content: ");
   Serial.print(message);
-  Serial.println("'.");
+  Serial.println(".");
 
   if (!_mqttClient.publish(topic.c_str(), message.c_str(), retained))
   {
