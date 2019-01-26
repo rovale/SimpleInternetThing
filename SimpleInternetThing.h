@@ -6,6 +6,7 @@
 
 #include "Arduino.h"
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 
 #include <PubSubClient.h> // https://github.com/rovale/pubsubclient, a fork with some changes enabling MQTT OTA updates.
 #include <ArduinoJson.h>  // Take a version 5, not the version 6 beta
@@ -21,6 +22,7 @@ public:
       const char *thingId, const char *thingName, const char *version,
       const char *wiFiSsid, const char *wiFiPassword,
       const char *mqttServer, uint16_t mqttPort,
+      const char *caCert,
       const char *mqttUsername, const char *mqttPassword,
       int indicatorLedPin);
 
@@ -34,6 +36,7 @@ private:
   const char *_wiFiPassword;
   const char *_mqttServer;
   uint16_t _mqttPort;
+  const char *_caCert;
   const char *_thingId;
   const char *_thingName;
   const char *_mqttUsername;
@@ -42,7 +45,7 @@ private:
   int _indicatorLedPin;
   const char *_version;
 
-  WiFiClient _wiFiClient;
+  WiFiClientSecure _wiFiClient;
   PubSubClient _mqttClient;
 
   String createTopic(const char *subject);

@@ -6,6 +6,7 @@ SimpleInternetThing::SimpleInternetThing(
     const char *thingId, const char *thingName, const char *version,
     const char *wiFiSsid, const char *wiFiPassword,
     const char *mqttServer, uint16_t mqttPort,
+    const char *caCert,
     const char *mqttUsername, const char *mqttPassword,
     int indicatorLedPin)
 {
@@ -13,6 +14,7 @@ SimpleInternetThing::SimpleInternetThing(
   _wiFiPassword = wiFiPassword;
   _mqttServer = mqttServer;
   _mqttPort = mqttPort;
+  _caCert = caCert;
   _thingId = thingId;
   _thingName = thingName;
   _mqttUsername = mqttUsername;
@@ -32,7 +34,8 @@ void SimpleInternetThing::setup()
   WiFi.mode(WIFI_STA);
   WiFi.begin(_wiFiSsid, _wiFiPassword, 0, NULL, false);
 
-  _wiFiClient = WiFiClient();
+  _wiFiClient = WiFiClientSecure();
+  _wiFiClient.setCACert(_caCert);
 
   _mqttClient = PubSubClient(_wiFiClient);
   _mqttClient.setServer(_mqttServer, _mqttPort);
