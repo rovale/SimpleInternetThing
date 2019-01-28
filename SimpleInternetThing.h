@@ -52,7 +52,11 @@ private:
 
   unsigned long _lastReconnectAttemptAt;
   void stayConnected();
+
   unsigned long _sequenceNumber = 0;
+  unsigned long _wiFiDisconnects = -1;
+  unsigned long _mqttDisconnects = -1;
+  
   String createStatusMessage(bool isOnline);
 
   void turnIndicatorLedOn();

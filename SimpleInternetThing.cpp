@@ -183,10 +183,13 @@ void SimpleInternetThing::stayConnected()
     return;
   }
 
+  _mqttDisconnects++;
+
   turnIndicatorLedOn();
 
   if (!WiFi.isConnected())
   {
+    _wiFiDisconnects++;
     unsigned long wifiConnectAttemptAt = millis();
 
     delay(10);
@@ -302,6 +305,15 @@ String SimpleInternetThing::createSystemMessage()
   jsonObject["sequence"] = _sequenceNumber;
   jsonObject["rssi"] = WiFi.RSSI();
   jsonObject["memory"] = ESP.getFreeHeap();
+
+  if (_mqttDisconnects > 0) {
+    jsonObject["mqttDisconnects"] = _mqttDisconnects;
+  }
+
+  if (_wiFiDisconnects > 0) {
+    jsonObject["wiFiDisconnects"] = _wiFiDisconnects;
+  }
+
   String jsonString;
   jsonObject.printTo(jsonString);
 
