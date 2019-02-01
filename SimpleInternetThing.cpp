@@ -82,8 +82,19 @@ void SimpleInternetThing::onReceive(char *topic, unsigned long length)
     handleOtaUpdate(length);
   }
 
+  byte payload[length];
+  unsigned long index;
+  for (index = 0; index < length; index++)
+  {
+    byte b;
+    if (!_mqttClient.readByte(&b))
+      return;
+
+    payload[index] = b;
+  }
+
   DynamicJsonBuffer jsonBuffer(1024);
-  JsonObject &root = jsonBuffer.parseObject(_wiFiClient);
+  JsonObject &root = jsonBuffer.parseObject(payload);
   if (root.success())
   {
     String commandName = root["name"];
@@ -183,13 +194,10 @@ void SimpleInternetThing::stayConnected()
     return;
   }
 
-  _mqttDisconnects++;
-
   turnIndicatorLedOn();
 
   if (!WiFi.isConnected())
   {
-    _wiFiDisconnects++;
     unsigned long wifiConnectAttemptAt = millis();
 
     delay(10);
@@ -209,9 +217,10 @@ void SimpleInternetThing::stayConnected()
       }
     }
 
+    _wiFiDisconnects++;
     Serial.println();
     Serial.println("Connected.");
-}
+  }
 
   if (millis() - _lastReconnectAttemptAt >= SIMPLE_INTERNET_THING_RECONNECT_DELAY)
   {
@@ -230,6 +239,7 @@ void SimpleInternetThing::stayConnected()
             true,
             createStatusMessage(false).c_str()))
     {
+      _mqttDisconnects++;
       turnIndicatorLedOff();
       Serial.println("Connected.");
 
@@ -246,7 +256,8 @@ void SimpleInternetThing::stayConnected()
   }
 }
 
-void SimpleInternetThing::subscribe(String topic, int qos) {
+void SimpleInternetThing::subscribe(String topic, int qos)
+{
   Serial.print("Subscribed to: ");
   Serial.print(topic);
   Serial.println(".");
@@ -306,11 +317,13 @@ String SimpleInternetThing::createSystemMessage()
   jsonObject["rssi"] = WiFi.RSSI();
   jsonObject["memory"] = ESP.getFreeHeap();
 
-  if (_mqttDisconnects > 0) {
+  if (_mqttDisconnects > 0)
+  {
     jsonObject["mqttDisconnects"] = _mqttDisconnects;
   }
 
-  if (_wiFiDisconnects > 0) {
+  if (_wiFiDisconnects > 0)
+  {
     jsonObject["wiFiDisconnects"] = _wiFiDisconnects;
   }
 
