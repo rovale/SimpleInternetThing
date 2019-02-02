@@ -79,7 +79,8 @@ void SimpleInternetThing::onReceive(char *topic, unsigned long length)
 
   if (String(topic) == createTopic("update"))
   {
-    handleOtaUpdate(length);
+    // Workaround. For some reason the reported length of the .bin is two bytes shorter than the actual.
+    handleOtaUpdate(length + 2);
   }
 
   byte payload[length];
@@ -88,10 +89,14 @@ void SimpleInternetThing::onReceive(char *topic, unsigned long length)
   {
     byte b;
     if (!_mqttClient.readByte(&b))
+    {
       return;
+    }
 
+    Serial.print((char)b);
     payload[index] = b;
   }
+  Serial.println();
 
   DynamicJsonBuffer jsonBuffer(1024);
   JsonObject &root = jsonBuffer.parseObject(payload);
