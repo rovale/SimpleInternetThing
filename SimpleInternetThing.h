@@ -11,7 +11,7 @@
 #include <PubSubClient.h> // https://github.com/rovale/pubsubclient, a fork with some changes enabling MQTT OTA updates.
 #include <ArduinoJson.h>  // Take a version 5, not the version 6 beta
 
-#define SIMPLE_INTERNET_THING_RECONNECT_DELAY 5000
+#define SIMPLE_INTERNET_THING_RECONNECT_DELAY 10000
 #define SIMPLE_INTERNET_THING_SYSTEM_MESSAGE_INTERVAL 60000
 
 class SimpleInternetThing

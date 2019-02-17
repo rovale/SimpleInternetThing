@@ -271,6 +271,10 @@ void SimpleInternetThing::subscribe(String topic, int qos)
 
 void SimpleInternetThing::publish(String topic, String message, bool retained)
 {
+  if (!_mqttClient.connected()) {
+    return;
+  }
+
   Serial.print("Published to: ");
   Serial.print(topic);
   Serial.print(", content: ");
@@ -299,13 +303,14 @@ void SimpleInternetThing::turnIndicatorLedOff()
 
 String SimpleInternetThing::createStatusMessage(bool isOnline)
 {
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<500> jsonBuffer;
   JsonObject &jsonObject = jsonBuffer.createObject();
   jsonObject["online"] = isOnline;
   if (isOnline)
   {
     jsonObject["name"] = _thingName;
     jsonObject["version"] = _version;
+    jsonObject["sdkVersion"] = ESP.getSdkVersion();
     jsonObject["mac"] = WiFi.macAddress();
     jsonObject["ip"] = WiFi.localIP().toString();
   }
