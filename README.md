@@ -2,7 +2,8 @@
 The goal of this library is to simplify building an IoT thing with MQTT connectivity. The focus is on the ESP32 using the Arduino framework. 
 
 The library comes with a solution for the following aspects:
-- Connecting to the WiFi network and the MQTT server.
+- Connecting to the WiFi network.
+- Connecting MQTT server over TLS.
 - Publishing retained online/offline status messages.
 - Publishing telemetry messages.
 - Command handling.
@@ -61,7 +62,7 @@ Changed telemetry interval to 10000.
 To update, publish the firmware binary to the `update` topic. 
 
 ```
-mosquitto_pub -h <mqtt server> -u <mqtt username> -P <mqtt password> -t somebuilding/someroom/ssb1/update -f firmware.bin
+mosquitto_pub -h <mqtt server> -p <mqtt port> --caFile <CA file> -u <mqtt username> -P <mqtt password> -t somebuilding/someroom/ssb1/update -f firmware.bin
 ```
 
 ```
