@@ -271,7 +271,8 @@ void SimpleInternetThing::subscribe(String topic, int qos)
 
 void SimpleInternetThing::publish(String topic, String message, bool retained)
 {
-  if (!_mqttClient.connected()) {
+  if (!_mqttClient.connected())
+  {
     return;
   }
 
@@ -293,12 +294,17 @@ void SimpleInternetThing::publish(String topic, String message, bool retained)
 
 void SimpleInternetThing::turnIndicatorLedOn()
 {
-  digitalWrite(_indicatorLedPin, HIGH);
+  digitalWrite(_indicatorLedPin, _inverseIndicatorLed ? LOW : HIGH);
 }
 
 void SimpleInternetThing::turnIndicatorLedOff()
 {
-  digitalWrite(_indicatorLedPin, LOW);
+  digitalWrite(_indicatorLedPin, _inverseIndicatorLed ? HIGH : LOW);
+}
+
+void SimpleInternetThing::inverseIndicatorLed()
+{
+  _inverseIndicatorLed = true;
 }
 
 String SimpleInternetThing::createStatusMessage(bool isOnline)

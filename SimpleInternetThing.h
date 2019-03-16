@@ -30,6 +30,7 @@ public:
   void loop();
   void publishData(const char *subject, String data);
   void onCommand(std::function<void(String, JsonObject &)> callback);
+  void inverseIndicatorLed();
 
 private:
   const char *_wiFiSsid;
@@ -43,6 +44,7 @@ private:
   const char *_mqttPassword;
   const char *_mqttTopicBase;
   int _indicatorLedPin;
+  bool _inverseIndicatorLed;
   const char *_version;
 
   WiFiClientSecure _wiFiClient;
@@ -56,7 +58,7 @@ private:
   unsigned long _sequenceNumber = 0;
   unsigned long _wiFiDisconnects = -1;
   unsigned long _mqttDisconnects = -1;
-  
+
   String createStatusMessage(bool isOnline);
 
   void turnIndicatorLedOn();
