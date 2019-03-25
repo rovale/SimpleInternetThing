@@ -38,7 +38,7 @@ While running it will publish system telemetry messages to indicate the system h
 ## Command handling
 To send a command to be executed by the thing, publish a message to the `command` topic. Commands should be in the JSON format with a `name` attribute for the command name and extra attributes for possible parameters. The library already supports the `reset` command. 
 ```
-mosquitto_pub -h <mqtt server> -u <mqtt username> -P <mqtt password> -t somebuilding/someroom/ssb1/command -m {"name":"reset"}
+mosquitto_pub -h <mqtt server> -p <mqtt port> --caFile <CA file> -u <mqtt username> -P <mqtt password> -t somebuilding/someroom/ssb1/command -m {"name":"reset"}
 ```
 ```
 Received on: somebuilding/someroom/ssb1/command, 14 bytes.
@@ -50,7 +50,7 @@ rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
 
 The SimpleSensorBox example handles specific commands, this is optional and easy to extend.
 ```
-mosquitto_pub -h <mqtt server> -u <mqtt username> -P <mqtt password> -t somebuilding/someroom/ssb1/command -m {"name":"updateSettings","telemetryInterval":10000}
+mosquitto_pub -h <mqtt server> -p <mqtt port> --caFile <CA file> -u <mqtt username> -P <mqtt password> -t somebuilding/someroom/ssb1/command -m {"name":"updateSettings","telemetryInterval":10000}
 ```
 ```
 Received on: somebuilding/someroom/ssb1/command, 47 bytes.
