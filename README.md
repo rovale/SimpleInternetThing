@@ -15,7 +15,7 @@ In order to use this library, also install:
  - [ArduinoJson](https://github.com/bblanchon/ArduinoJson), take a version 5, not the version 6 beta.
 
 ## Usage
-See the example of a [SimpleSensorBox](./examples/SimpleSensorBox/SimpleSensorBox.ino). Customize the secrets and flash it on an ESP32. When everything is OK the the serial output should show what is going on.
+See the example of a [SimpleSensorBox](./examples/SimpleSensorBox/SimpleSensorBox.cpp). Customize the secrets and flash it on an ESP32. When everything is OK the the serial output should show what is going on.
 
 ```
 Sensor ssb1 version 0.0.1.
