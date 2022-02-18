@@ -31,9 +31,9 @@ void SimpleInternetThing::setup()
   pinMode(_indicatorLedPin, OUTPUT);
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(_wiFiSsid, _wiFiPassword, 0, NULL, false);
+  WiFi.begin(_wiFiSsid, _wiFiPassword);
 
-  _wiFiClient = WiFiClientSecure();
+  WiFiClientSecure _wiFiClient;
   _wiFiClient.setInsecure();
   // _wiFiClient.setCACert(_caCert);
 

@@ -4,7 +4,6 @@
 #ifndef SimpleInternetThing_h
 #define SimpleInternetThing_h
 
-#include "Arduino.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
