@@ -1,5 +1,4 @@
 #include <SimpleInternetThing.h>
-#include <Update.h>
 
 SimpleInternetThing::SimpleInternetThing(
     const char *mqttTopicBase,
