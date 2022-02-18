@@ -39,7 +39,17 @@ void SimpleInternetThing::setup()
 
   _mqttClient = PubSubClient(_wiFiClient);
   _mqttClient.setServer(_mqttServer, _mqttPort);
-  _mqttClient.setCallback(std::bind(&SimpleInternetThing::onReceive, this, std::placeholders::_1, std::placeholders::_2));
+  _mqttClient.setCallback(std::bind(&SimpleInternetThing::onReceive, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i=0;i<length;i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
 }
 
 void SimpleInternetThing::loop()
@@ -69,33 +79,13 @@ String SimpleInternetThing::createTopic(const char *subject)
   return String(_mqttTopicBase) + "/" + String(_thingId) + "/" + String(subject);
 }
 
-void SimpleInternetThing::onReceive(char *topic, unsigned long length)
+void SimpleInternetThing::onReceive(char* topic, byte* payload, unsigned int length)
 {
   Serial.print("Received on: ");
   Serial.print(topic);
   Serial.print(", ");
   Serial.print(length);
   Serial.println(" bytes.");
-
-  if (String(topic) == createTopic("update"))
-  {
-    // Workaround. For some reason the reported length of the .bin is two bytes shorter than the actual.
-    handleOtaUpdate(length + 2);
-  }
-
-  byte payload[length];
-  unsigned long index;
-  for (index = 0; index < length; index++)
-  {
-    byte b;
-    if (!_mqttClient.readByte(&b))
-    {
-      return;
-    }
-
-    Serial.print((char)b);
-    payload[index] = b;
-  }
   Serial.println();
 
   DynamicJsonBuffer jsonBuffer(1024);
@@ -127,69 +117,6 @@ void SimpleInternetThing::onReceive(char *topic, unsigned long length)
   {
     Serial.println("Unable to parse payload.");
   }
-}
-
-void SimpleInternetThing::handleOtaUpdate(unsigned long length)
-{
-  String progressTopic = createTopic("update/progress");
-  publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Updating. New firmware size is " + String(length) + " bytes."), false);
-
-  if (Update.begin(length))
-  {
-    unsigned long tenPercent = length / 10;
-    byte buffer[1];
-    unsigned long actual;
-    for (actual = 0; actual < length; actual++)
-    {
-      byte b;
-      if (!_mqttClient.readByte(&b))
-      {
-        break;
-      }
-      buffer[0] = b;
-      Update.write(buffer, 1);
-
-      if ((actual > 0) && (actual % tenPercent == 0))
-      {
-        publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Read " + String(actual) + " bytes."), false);
-      }
-    }
-
-    if (Update.end())
-    {
-      if (Update.isFinished())
-      {
-        publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Update successful."), false);
-      }
-      else
-      {
-        publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Update not finished."), false);
-      }
-    }
-    else
-    {
-      publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Error occurred, #: " + String(Update.getError()) + "."), false);
-    }
-  }
-  else
-  {
-    publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Not enough space to update."), false);
-  }
-
-  publish(progressTopic.c_str(), createOtaUpdateProgressMessage("Restarting."), false);
-  delay(1000);
-  ESP.restart();
-}
-
-String SimpleInternetThing::createOtaUpdateProgressMessage(String message)
-{
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject &jsonObject = jsonBuffer.createObject();
-  jsonObject["message"] = message;
-  String jsonString;
-  jsonObject.printTo(jsonString);
-
-  return jsonString;
 }
 
 void SimpleInternetThing::stayConnected()

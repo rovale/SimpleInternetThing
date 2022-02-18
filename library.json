@@ -14,8 +14,7 @@
   ],
   "dependencies": [
     {
-      "name": "PubSubClient",
-      "version": "https://github.com/rovale/pubsubclient"
+      "name": "PubSubClient"
     },
     {
       "name": "ArduinoJson",
