@@ -34,7 +34,8 @@ void SimpleInternetThing::setup()
   WiFi.begin(_wiFiSsid, _wiFiPassword, 0, NULL, false);
 
   _wiFiClient = WiFiClientSecure();
-  _wiFiClient.setCACert(_caCert);
+  _wiFiClient.setInsecure();
+  // _wiFiClient.setCACert(_caCert);
 
   _mqttClient = PubSubClient(_wiFiClient);
   _mqttClient.setServer(_mqttServer, _mqttPort);
